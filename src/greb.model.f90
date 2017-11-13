@@ -147,8 +147,8 @@ subroutine greb_model
   real, dimension(xdim,ydim) :: Ts0, Ts1, Ta0, Ta1, To0, To1, q0, q1,       &
 &                               ts_ini, ta_ini, q_ini, to_ini       
 
-  open(21,file='control',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(22,file='scenario',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(21,file='output/control',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(22,file='output/scenario',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
   dTrad = -0.16*Tclim -5. ! offset Tatmos-rad
 
