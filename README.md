@@ -1,12 +1,14 @@
 # Globally Resolved Energy Balance (GREB) Climate Model
 
-GREB is a very simple, globally resolved, and computationally cheap energy balance model, which is capable of simulating the main characteristics of global warming. The model bridges the gap between strongly simplified energy balance models and fully coupled 4-dimensional complex CGCMs. 
+GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. Its source code is about 1000 lines of fortran, and it currently runs at about 4 simulated months per second on a standard laptop.
 
 
 ## Compile and run
 
-    make greb
-    ./greb
+```
+make greb
+./greb
+```
 
 
 ## References
