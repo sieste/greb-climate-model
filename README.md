@@ -15,6 +15,8 @@ Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change w
 
 [Project website](http://users.monash.edu.au/~dietmard/content/GREB/GREB_model.html)
 
+[Code archive](http://users.monash.edu.au/~dietmard/content/GREB/code_files/greb.web-public.tar.zip) (zip, 65Mb)
+
 The github repo [alex-robinson/greb-ucm](https://github.com/alex-robinson/greb-ucm) contains the model with a few modifications, which have been adopted here. They also have R code for data handling and plotting.
 
 
