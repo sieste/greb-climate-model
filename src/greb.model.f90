@@ -39,14 +39,14 @@ module mo_numerics
   integer            :: time_flux = 0                 ! length of integration for flux correction [yrs]
   integer            :: time_ctrl = 0                 ! length of integration for control run  [yrs]
   integer            :: time_scnr = 0                 ! length of integration for scenario run [yrs]
-  integer            :: ipx       = 1                 ! points for diagonstic print outs
-  integer            :: ipy       = 1                 ! points for diagonstic print outs
+  integer            :: ipx       = 1                 ! points for diagnostic print outs
+  integer            :: ipy       = 1                 ! points for diagnostic print outs
   integer, parameter, dimension(12) :: jday_mon = (/31,28,31,30,31,30,31,31,30,31,30,31/) ! days per 
   real, parameter    :: dlon      = 360./xdim         ! linear increment in lon
   real, parameter    :: dlat      = 180./ydim         ! linear increment in lat
 
   integer            :: ireal     = 4         ! record length for IO (machine dependent)
-! 												ireal = 4 for Mac Book Pro 
+                                              ! ireal = 4 for Mac Book Pro 
 
   namelist / numerics / time_flux, time_ctrl, time_scnr
 
@@ -266,7 +266,7 @@ subroutine time_loop(it, isrec, year, CO2, irec, mon, ionum, Ts1, Ta1, q1, To1, 
   ! write output
   call output(it, ionum, irec, mon, ts0, ta0, to0, q0, albedo)
   ! diagnostics: annual means plots
-  call diagonstics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
+  call diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
 
 end subroutine time_loop
 
@@ -353,7 +353,7 @@ subroutine  qflux_correction(CO2_ctrl, Ts1, Ta1, q1, To1)
     ! sea ice heat capacity
     call seaice(Ts0)
     ! diagnostics: annual means plots
-    call diagonstics(it, 0.0, CO2_ctrl, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
+    call diagnostics(it, 0.0, CO2_ctrl, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
     ! memory
     Ts1=Ts0; Ta1=Ta0; q1=q0;  To1=To0; 
   end do
@@ -953,9 +953,9 @@ subroutine co2_level(it, year, CO2)
 end subroutine co2_level
 
 !+++++++++++++++++++++++++++++++++++++++
-subroutine diagonstics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
+subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
 !+++++++++++++++++++++++++++++++++++++++
-!    diagonstics plots
+!    diagnostics plots
 
   USE mo_numerics,    ONLY: ndays_yr, xdim, ydim, ipx ,ipy, ndt_days, nstep_yr
   USE mo_physics,     ONLY: ityr, TF_correct, qF_correct, cap_surf, Tclim
@@ -979,7 +979,7 @@ subroutine diagonstics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
      lwmn=0.; qlatmn=0.; qsensmn=0.; ftmn=0.; fqmn=0.; ! reset annual mean values
   end if
 
-end subroutine diagonstics
+end subroutine diagnostics
 
 !+++++++++++++++++++++++++++++++++++++++
 subroutine output(it, iunit, irec, mon, ts0, ta0, to0, q0, albedo)
