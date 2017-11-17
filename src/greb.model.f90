@@ -998,11 +998,11 @@ subroutine output(it, iunit, irec, mon, ts0, ta0, to0, q0, albedo)
   if (       jday == sum(jday_mon(1:mon))                   &
 &      .and. it/float(ndt_days) == nint(it/float(ndt_days)) ) then
      ndm=jday_mon(mon)*ndt_days
-     irec=irec+1; write(iunit,rec=irec)  Tmm/ndm
-     irec=irec+1; write(iunit,rec=irec)  Tamm/ndm
-     irec=irec+1; write(iunit,rec=irec)  Tomm/ndm
-     irec=irec+1; write(iunit,rec=irec)   qmm/ndm
-     irec=irec+1; write(iunit,rec=irec)  apmm/ndm
+     irec=irec+1; write(iunit,rec=irec)  Tmm/ndm  ! surface temperature
+     irec=irec+1; write(iunit,rec=irec)  Tamm/ndm ! air temperature
+     irec=irec+1; write(iunit,rec=irec)  Tomm/ndm ! deep ocean temperature
+     irec=irec+1; write(iunit,rec=irec)   qmm/ndm ! atmospheric water vapor
+     irec=irec+1; write(iunit,rec=irec)  apmm/ndm ! surface albedo
      Tmm=0.; Tamm=0.;Tomm=0.; qmm=0.; apmm=0.; 
      mon=mon+1; if (mon==13) mon=1
   end if
