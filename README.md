@@ -38,4 +38,15 @@ In the source code, the relevant lines for sea ice are:
 &       a_surf = a_no_ice+da_ice*(1-(Tsurf-To_ice1)/(To_ice2-To_ice1))
 ```
 
+### Glaciers 
+
+Glaciers are prescribed, they do not grow or melt.
+
+
+### Winds
+
+Wind fields are prescribed, two fields per day, repeated each year.
+Wind only acts to redistribute heat and moisture through advection.
+
+
 
