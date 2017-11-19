@@ -22,3 +22,12 @@ ggplot(filter(albedo_df, month(time)==9) %>% mutate(year=year(time))) +
 # plot global average albedo over time
 albedo_df %>% group_by(time) %>% summarise(albedo=mean(albedo)) %>%
 ggplot() + geom_line(aes(x=time, y=albedo))
+
+
+# plot albedo over arctica
+albedo = read_greb(file='../output/scenario', tstamps=tstamps, varname='albedo', ivar=5, nvar=5)
+albedo = albedo %>% filter(year(time)==1989, month(time) %in% c(3,9)) %>% mutate(time=ymd(time))
+ggplot(albedo) + facet_wrap(~time) + geom_tile(aes(x=lon, y=lat, fill=albedo)) + coord_map('ortho') + geom_path(data=coast, mapping=aes(x=long, y=lat, group=group))
+
+
+
