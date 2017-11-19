@@ -25,7 +25,7 @@ ggplot() +
 # calculate monthly wind speeds per grid point
 wind_monavg = 
   wind %>% mutate(month=month(time)) %>%
-  group_by(month, lon, lat) %>% summarise(u=mean(u), v=mean(v))
+  group_by(month, lon, lat) %>% summarise(u=mean(u), v=mean(v)) %>% ungroup
 
 # plot monthly average wind fields
 ggplot(wind_monavg) + facet_wrap(~month, ncol=3) +
@@ -33,3 +33,9 @@ ggplot(wind_monavg) + facet_wrap(~month, ncol=3) +
   geom_segment(data=wind_monavg, mapping=aes(x=lon-u/2, y=lat-v/2, xend=lon+u/2, yend=lat+v/2))
 
 
+
+# plot wind field in orthogonal projection (centered at north pole)
+ggplot(wind_monavg %>% filter(month==6) %>% wrap_lon('-180')) + 
+  geom_path(data=coast, mapping=aes(x=long, y=lat, group=id)) +
+  geom_segment(aes(x=lon-u/4, y=lat-v/4, xend=lon+u/4, yend=lat+v/4)) +
+  coord_map('ortho')
