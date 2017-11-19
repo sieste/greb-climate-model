@@ -22,6 +22,12 @@ There is some R code in the repository to load the model output into data frames
 ```r
 source('R/functions.R')
 tstamps = seq.Date(from=as.Date('1940-01-01'), by='1 month', len=50*12)
+```
+
+
+### Rising annual global mean temperature after doubling CO2
+
+```r
 tsurf = read_greb(file='output/scenario', tstamps=tstamps, varname='tsurf', ivar=1, nvar=5)
 ggplot(tsurf %>% group_by(year=year(time)) %>% summarise(T_surf=mean(tsurf))) +
   geom_line(aes(x=year, y=T_surf)) + ggtitle('double CO2 scenario')
@@ -30,15 +36,18 @@ ggplot(tsurf %>% group_by(year=year(time)) %>% summarise(T_surf=mean(tsurf))) +
 ![1940-1990 time series of surface temperature under double CO2 scenario](figure/tsurf_2co2.png)
 
 
+### Melting ice in the Arctic, as indicated by decreasing albedo
+
 ```r
-albedo = read_greb(file='../output/scenario', tstamps=tstamps, varname='albedo', ivar=5, nvar=5)
-albedo = albedo %>% filter(year(time)==1989, month(time) %in% c(3,9)) %>% mutate(time=ymd(time))
-ggplot(albedo) + facet_wrap(~time) + coord_map('ortho') +
+albedo = read_greb(file='output/scenario', tstamps=tstamps, varname='albedo', ivar=5, nvar=5)
+albedo = albedo %>% filter(year(time) %in% c(1940, 1989), month(time)==9) %>% 
+         mutate(time=ymd(time), albedo = ifelse(albedo < 0.4, '< 0.4', '>= 0.4'))
+ggplot(albedo) + facet_wrap(~time) + coord_map('ortho', ylim=c(50,90)) + theme_void() +
   geom_tile(aes(x=lon, y=lat, fill=albedo)) +  
   geom_path(data=coast, mapping=aes(x=long, y=lat, group=group))
 ```
 
-![1940-1990 time series of surface temperature under double CO2 scenario](figure/albedo.png)
+![September arctic albedo 1940 and 1989 under double CO2 scenario](figure/albedo.png)
 
 
 ## References
