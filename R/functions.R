@@ -3,6 +3,8 @@ library(stringr)
 library(lubridate)
 library(rnaturalearth)
 
+coast = ne_coastline() %>% fortify 
+
 
 #' Read a variable from greb model output
 #'
@@ -70,3 +72,26 @@ read_greb = function(file, tstamps,
 } 
 
 
+#' Transform longitudes between ranges [0,360] and [-180, 180]
+#'
+#' @param df data frame with column `lon` or `long`
+#' @param how character to which range to transform ('0_360' or '-180_180')
+#' @return the original data frame with transformed longitude column
+wrap_lon = function(df, how=c('0_360', '-180_180')) {
+  how = match.arg(how)
+  is_long = FALSE
+  if ('long' %in% names(df)) {
+    names(df) = names(df) %>% str_replace('^long$', 'lon')
+    is_long = TRUE
+  }
+  if (how == '0_360') {
+    df = df %>% mutate(lon = ifelse(lon < 0, lon + 360, lon))
+  }
+  if (how == '-180_180') {
+    df = df %>% mutate(lon = ifelse(lon > 180, lon - 360, lon))
+  }
+  if (is_long) {
+    names(df) = names(df) %>% str_replace('^lon$', 'long')
+  }
+  return(df)
+}
