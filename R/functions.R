@@ -3,7 +3,7 @@ library(stringr)
 library(lubridate)
 library(rnaturalearth)
 
-coast = ne_coastline() %>% fortify 
+coast = ne_coastline() %>% fortify %>% as_data_frame
 
 
 #' Read a variable from greb model output
@@ -66,7 +66,8 @@ read_greb = function(file, tstamps,
   out_df = bind_cols(
     data_frame(time = tstamps) %>% slice(rep(1:ntime, each=ngrid)),
     lonlat                     %>% slice(rep(1:ngrid, ntime)),
-    out)
+    out) %>% wrap_lon(how='-180_180')
+   
 
   return(out_df) 
 } 

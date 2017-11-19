@@ -35,7 +35,8 @@ ggplot(wind_monavg) + facet_wrap(~month, ncol=3) +
 
 
 # plot wind field in orthogonal projection (centered at north pole)
-ggplot(wind_monavg %>% filter(month==6) %>% wrap_lon('-180')) + 
+ggplot(wind_monavg %>% filter(month==6)) + 
   geom_path(data=coast, mapping=aes(x=long, y=lat, group=id)) +
-  geom_segment(aes(x=lon-u/4, y=lat-v/4, xend=lon+u/4, yend=lat+v/4)) +
+  geom_segment(aes(x=lon-u/4, y=lat-v/4, xend=lon+u/4, yend=lat+v/4), 
+               arrow=arrow(length=unit(.15,'cm'))) +
   coord_map('ortho')
