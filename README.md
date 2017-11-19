@@ -2,6 +2,7 @@
 
 GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. Its source code is about 1000 lines of fortran, and it currently runs at about 4 simulated months per second on a standard laptop.
 
+*Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change with a Globally Resolved Energy Balance Model. Climate dynamics, 2011, 37, 2143-2165.* [link](http://users.monash.edu.au/~dietmard/papers/dommenget.and.floeter.greb.paper.cdym2011.pdf)
 
 ## Compile and run
 
@@ -9,6 +10,35 @@ GREB is a very simple, globally resolved energy balance model, which is capable 
 make greb
 ./greb
 ```
+
+Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and albedo in file `output/scenario`.
+
+
+## R analysis code 
+
+`greb` saves a number of monthly mean output fields.
+There is some R code in the repository to load the model output into data frames for further processing.
+
+```r
+source('R/functions.R')
+tstamps = seq.Date(from=as.Date('1940-01-01'), by='1 month', len=50*12)
+tsurf = read_greb(file='output/scenario', tstamps=tstamps, varname='tsurf', ivar=1, nvar=5)
+ggplot(tsurf %>% group_by(year=year(time)) %>% summarise(T_surf=mean(tsurf))) +
+  geom_line(aes(x=year, y=T_surf)) + ggtitle('double CO2 scenario')
+```
+[comment]: <> (ggsave(..., dpi=100, scale=.5))
+![1940-1990 time series of surface temperature under double CO2 scenario](figure/tsurf_2co2.png)
+
+
+```r
+albedo = read_greb(file='../output/scenario', tstamps=tstamps, varname='albedo', ivar=5, nvar=5)
+albedo = albedo %>% filter(year(time)==1989, month(time) %in% c(3,9)) %>% mutate(time=ymd(time))
+ggplot(albedo) + facet_wrap(~time) + coord_map('ortho') +
+  geom_tile(aes(x=lon, y=lat, fill=albedo)) +  
+  geom_path(data=coast, mapping=aes(x=long, y=lat, group=group))
+```
+
+![1940-1990 time series of surface temperature under double CO2 scenario](figure/albedo.png)
 
 
 ## References
@@ -20,6 +50,7 @@ Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change w
 [Code archive](http://users.monash.edu.au/~dietmard/content/GREB/code_files/greb.web-public.tar.zip) (zip, 65Mb)
 
 The github repo [alex-robinson/greb-ucm](https://github.com/alex-robinson/greb-ucm) contains the model with a few modifications, which have been adopted here. They also have R code for data handling and plotting.
+
 
 
 ## Notes
