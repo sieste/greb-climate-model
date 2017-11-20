@@ -38,8 +38,12 @@ read_greb = function(file, tstamps,
                      ivar=1L, nvar=5L, 
                      nlon=96, nlat=48, nbyte=4) {
 
+  # sanity checks
   stopifnot(file.exists(file))
   stopifnot(file.size(file) == nlon * nlat * nvar * nbyte * length(tstamps))
+  stopifnot(length(ivar) == length(varname))
+  stopifnot(all(ivar <= nvar))
+
   # latitude/longitude grid (longitude varies fastest)
   ngrid = nlon * nlat
   dlon   = 360 / nlon
@@ -50,24 +54,30 @@ read_greb = function(file, tstamps,
 
   ntime = length(tstamps)
 
+  # initialise data frame with time, lon, lat
+  out_df = bind_cols(
+      data_frame(time = tstamps) %>% slice(rep(1:ntime, each=ngrid)),
+      lonlat                     %>% slice(rep(1:ngrid, ntime))
+    ) %>% wrap_lon(how='-180_180')
+
+
   # read requested data from file
   con  = file(file, open='rb')
-  out  = list()
-  nout = 0
-  for (ii in seq_len(ntime)) {
-    seek(con, where = nbyte * ngrid * ((ii-1) * nvar + (ivar - 1)))
-    out[nout + 1:ngrid] = readBin(con=con, what=numeric(), n=ngrid, size=nbyte)
-    nout = nout + ngrid
-  }
-  close(con)
-  out = list(unlist(out)) %>% setNames(varname) %>% as_data_frame
 
-  # generate data frame with time, lon, lat, and value
-  out_df = bind_cols(
-    data_frame(time = tstamps) %>% slice(rep(1:ntime, each=ngrid)),
-    lonlat                     %>% slice(rep(1:ngrid, ntime)),
-    out) %>% wrap_lon(how='-180_180')
-   
+  for (jj in seq_along(ivar)) {
+    ivar_ = ivar[jj]
+    out  = list()
+    nout = 0
+    for (ii in seq_len(ntime)) {
+      seek(con, where = nbyte * ngrid * ((ii-1) * nvar + (ivar_ - 1)))
+      out[nout + 1:ngrid] = readBin(con=con, what=numeric(), n=ngrid, size=nbyte)
+      nout = nout + ngrid
+    }
+    out = list(unlist(out)) %>% setNames(varname[jj]) %>% as_data_frame
+    out_df = bind_cols(out_df, out)
+  }
+
+  close(con)
 
   return(out_df) 
 } 
