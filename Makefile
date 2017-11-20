@@ -9,7 +9,7 @@ LFLAGS		 =
 ifeq ($(debug), 1)
     DFLAGS   = -w -p -ggdb -ffpe-trap=invalid,zero,overflow,underflow -fbacktrace -fcheck=all
 else
-    DFLAGS   = -O
+    DFLAGS   = -O3
 endif
 
 

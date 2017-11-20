@@ -1,6 +1,6 @@
 # Globally Resolved Energy Balance (GREB) Climate Model
 
-GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. Its source code is about 1000 lines of fortran, and it currently runs at about 4 simulated months per second on a standard laptop.
+GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. The source code is less than 1000 lines of fortran, and the model currently runs at about 1 simulated year per second on a standard laptop.
 
 *Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change with a Globally Resolved Energy Balance Model. Climate dynamics, 2011, 37, 2143-2165.* [link](http://users.monash.edu.au/~dietmard/papers/dommenget.and.floeter.greb.paper.cdym2011.pdf)
 
@@ -11,12 +11,11 @@ make greb
 ./greb
 ```
 
-Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and albedo in file `output/scenario`.
+Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and albedo in the file `output/scenario`.
 
 
 ## R analysis code 
 
-`greb` saves a number of monthly mean output fields.
 There is some R code in the repository to load the model output into data frames for further processing.
 
 ```r
