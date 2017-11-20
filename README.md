@@ -21,17 +21,18 @@ There is some R code in the repository to load the model output into data frames
 ```r
 source('R/functions.R')
 tstamps = seq.Date(from=as.Date('1940-01-01'), by='1 month', len=50*12)
+tsurf = read_greb(file='output/scenario', tstamps=tstamps, varname='tsurf', ivar=1, nvar=5)
 ```
 
 
 ### Rising annual global mean temperature after doubling CO2
 
 ```r
-tsurf = read_greb(file='output/scenario', tstamps=tstamps, varname='tsurf', ivar=1, nvar=5)
-ggplot(tsurf %>% group_by(year=year(time)) %>% summarise(T_surf=mean(tsurf))) +
-  geom_line(aes(x=year, y=T_surf)) + ggtitle('double CO2 scenario')
+tsurf = tsurf %>% mutate(tsurf=tsurf-273.15, coslat = cos(lat/180*pi)) %>% 
+        group_by(year=year(time)) %>% summarise(T_surf=weighted.mean(tsurf, w=coslat))
+ggplot(tsurf) + geom_line(aes(x=year, y=T_surf)) + ggtitle('double CO2 scenario')
 ```
-[comment]: <> (ggsave(..., dpi=100, scale=.5))
+[comment]: <> (ggsave(..., dpi=100, width=6, height=3.5))
 ![1940-1990 time series of surface temperature under double CO2 scenario](figure/tsurf_2co2.png)
 
 
