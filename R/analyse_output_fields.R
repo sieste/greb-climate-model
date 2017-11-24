@@ -23,6 +23,7 @@ ggplot(filter(albedo_df, month(time)==9) %>% mutate(year=year(time))) +
 albedo_df %>% group_by(time) %>% summarise(albedo=mean(albedo)) %>%
 ggplot() + geom_line(aes(x=time, y=albedo))
 
+# for README file: (ggsave(..., dpi=100, width=6, height=3.5))
 
 # plot albedo over arctica
 albedo = read_greb(file='../output/scenario', tstamps=tstamps, varname='albedo', ivar=5, nvar=5)
