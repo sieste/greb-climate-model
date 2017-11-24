@@ -20,6 +20,7 @@ $(objdir)/greb.model.o: $(srcdir)/greb.model.f90
 
 ## greb executable
 greb: $(objdir)/greb.model.o
+	mkdir -p output
 	$(FC) $(DFLAGS) $(FLAGS) -o greb $^ $(srcdir)/greb.shell.web-public.f90 $(LFLAGS)
 
 clean:
