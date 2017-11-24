@@ -32,7 +32,7 @@ tsurf = tsurf %>% mutate(tsurf=tsurf-273.15, coslat = cos(lat/180*pi)) %>%
         group_by(year=year(time)) %>% summarise(T_surf=weighted.mean(tsurf, w=coslat))
 ggplot(tsurf) + geom_line(aes(x=year, y=T_surf)) + ggtitle('double CO2 scenario')
 ```
-[comment]: <> (ggsave(..., dpi=100, width=6, height=3.5))
+
 ![1940-1990 time series of surface temperature under double CO2 scenario](figure/tsurf_2co2.png)
 
 
