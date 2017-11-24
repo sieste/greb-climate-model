@@ -15,6 +15,7 @@ endif
 
 ## Individual libraries or modules ##
 $(objdir)/greb.model.o: $(srcdir)/greb.model.f90
+	@mkdir -p $(@D)
 	$(FC) $(DFLAGS) $(FLAGS) -c -o $@ $<
 
 ## greb executable
@@ -23,3 +24,4 @@ greb: $(objdir)/greb.model.o
 
 clean:
 	rm -f greb $(objdir)/*.o $(objdir)/*.mod
+	rmdir $(objdir)
