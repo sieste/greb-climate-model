@@ -25,4 +25,4 @@ greb: $(objdir)/greb.model.o
 
 clean:
 	rm -f greb $(objdir)/*.o $(objdir)/*.mod
-	rmdir $(objdir)
+	rm -rf $(objdir)
