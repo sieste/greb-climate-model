@@ -18,10 +18,19 @@ $(objdir)/greb.model.o: $(srcdir)/greb.model.f90
 	@mkdir -p $(@D)
 	$(FC) $(DFLAGS) $(FLAGS) -c -o $@ $<
 
+$(objdir)/greb.simple.o: $(srcdir)/greb.simple.f90
+	@mkdir -p $(@D)
+	$(FC) $(DFLAGS) $(FLAGS) -c -o $@ $<
+
 ## greb executable
 greb: $(objdir)/greb.model.o
 	mkdir -p output
 	$(FC) $(DFLAGS) $(FLAGS) -o greb $^ $(srcdir)/greb.shell.web-public.f90 $(LFLAGS)
+
+greb-simple: $(objdir)/greb.simple.o
+	mkdir -p output
+	$(FC) $(DFLAGS) $(FLAGS) -o greb-simple $^ $(srcdir)/greb.shell.simple.f90 $(LFLAGS)
+
 
 clean:
 	rm -f greb $(objdir)/*.o $(objdir)/*.mod
