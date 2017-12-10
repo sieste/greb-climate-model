@@ -36,11 +36,6 @@ module mo_numerics
   integer, parameter :: dt_crcl   = 0.5*3600          ! time step circulation [s]  
   integer, parameter :: ndt_days  = 24*3600/dt        ! number of timesteps per day
   integer, parameter :: nstep_yr  = ndays_yr*ndt_days ! number of timesteps per year
-  integer            :: time_flux = 0                 ! length of integration for flux correction [yrs]
-  integer            :: time_ctrl = 0                 ! length of integration for control run  [yrs]
-  integer            :: time_scnr = 0                 ! length of integration for scenario run [yrs]
-  integer            :: ipx       = 1                 ! points for diagnostic print outs
-  integer            :: ipy       = 1                 ! points for diagnostic print outs
   integer, parameter, dimension(12) :: jday_mon = (/31,28,31,30,31,30,31,31,30,31,30,31/) ! days per 
   real, parameter    :: dlon      = 360./xdim         ! linear increment in lon
   real, parameter    :: dlat      = 180./ydim         ! linear increment in lat
@@ -48,9 +43,29 @@ module mo_numerics
   integer            :: ireal     = 4         ! record length for IO (machine dependent)
                                               ! ireal = 4 for Mac Book Pro 
 
-  namelist / numerics / time_flux, time_ctrl, time_scnr
+  integer :: time_flux  = 0                ! length of integration for flux correction [yrs]
+  integer :: time_ctrl  = 0                ! length of integration for control run  [yrs]
+  integer :: time_scnr  = 0                ! length of integration for scenario run [yrs]
+  integer :: ipx        = 1                ! points for diagnostic print outs
+  integer :: ipy        = 1                ! points for diagnostic print outs
+
+  contains
+  subroutine init_default_mo_numerics()
+    time_flux = 0
+    time_ctrl = 0
+    time_scnr = 0
+    ipx       = 1
+    ipy       = 1
+  end subroutine init_default_mo_numerics
+
+  subroutine namelist_mo_numerics()
+    namelist / numerics / time_flux, time_ctrl, time_scnr
+    read(10, numerics)
+  end subroutine namelist_mo_numerics
 
 end module mo_numerics
+
+
 
 !+++++++++++++++++++++++++++++++++++++++
 module mo_physics
@@ -59,43 +74,43 @@ module mo_physics
   use mo_numerics
 
 ! physical parameter (natural constants)
-  parameter( pi        = 3.1416 )  
-  parameter( sig       = 5.6704e-8 )     ! stefan-boltzmann constant [W/m^2/K^4]
-  parameter( rho_ocean = 999.1 )         ! density of water at T=15C [kg/m^2]
-  parameter( rho_land  = 2600. )         ! density of solid rock [kg/m^2]
-  parameter( rho_air   = 1.2 )           ! density of air at 20C at NN 
-  parameter( cp_ocean  = 4186. )         ! specific heat capacity of water at T=15C [J/kg/K]
-  parameter( cp_land   = cp_ocean/4.5 )  ! specific heat capacity of dry land [J/kg/K]
-  parameter( cp_air    = 1005. )         ! specific heat capacity of air      [J/kg/K]
-  parameter( eps       = 1. )            ! emissivity for IR
+  real :: pi                    
+  real :: sig            ! stefan-boltzmann constant [W/m^2/K^4]
+  real :: rho_ocean      ! density of water at T=15C [kg/m^2]
+  real :: rho_land       ! density of solid rock [kg/m^2]
+  real :: rho_air        ! density of air at 20C at NN 
+  real :: cp_ocean       ! specific heat capacity of water at T=15C [J/kg/K]
+  real :: cp_land        ! specific heat capacity of dry land [J/kg/K]
+  real :: cp_air         ! specific heat capacity of air      [J/kg/K]
+  real :: eps            ! emissivity for IR
+
 
 ! physical parameter (model values)
-  parameter( d_ocean   = 50. )                     ! depth of ocean column [m]  
-  parameter( d_land    = 2. )                      ! depth of land column  [m]
-  parameter( d_air     = 5000. )                   ! depth of air column   [m]
-  parameter( cap_ocean = cp_ocean*rho_ocean )      ! heat capacity 1m ocean  [J/K/m^2] 
-  parameter( cap_land  = cp_land*rho_land*d_land ) ! heat capacity land   [J/K/m^2]
-  parameter( cap_air   = cp_air*rho_air*d_air )    ! heat capacity air    [J/K/m^2]
-  parameter( ct_sens   = 22.5 )                    ! coupling for sensible heat
-  parameter( da_ice    = 0.25 )                    ! albedo diff for ice covered points
-  parameter( a_no_ice  = 0.1 )                     ! albedo for non-ice covered points
-  parameter( a_cloud   = 0.35 )                     ! albedo for clouds
-  parameter( Tl_ice1   = 273.15-10. )              ! temperature range of land snow-albedo feedback
-  parameter( Tl_ice2   = 273.15  )                 ! temperature range of land snow-albedo feedback
-  parameter( To_ice1   = 273.15-7. )               ! temperature range of ocean ice-albedo feedback
-  parameter( To_ice2   = 273.15-1.7 )              ! temperature range of ocean ice-albedo feedback 
-  parameter( co_turb   = 5.0 )                     ! turbolent mixing to deep ocean [W/K/m^2]
-  parameter( kappa     = 8e5 )                     ! atmos. diffusion coefficient [m^2/s]
-  parameter( ce        = 2e-3  )                   ! laten heat transfer coefficient for ocean
-  parameter( cq_latent = 2.257e6 )                 ! latent heat of condensation/evapoartion f water [J/kg]
-  parameter( cq_rain   = -0.1/24./3600. )          ! decrease in air water vapor due to rain [1/s]
-  parameter( z_air     = 8400. )                   ! scaling height atmos. heat, CO2
-  parameter( z_vapor   = 5000. )                   ! scaling height atmos. water vapor diffusion
-  parameter( r_qviwv   = 2.6736e3)                 ! regres. factor between viwv and q_air  [kg/m^3]
+  real :: d_ocean         ! depth of ocean column [m]  
+  real :: d_land          ! depth of land column  [m]
+  real :: d_air           ! depth of air column   [m]
+  real :: cap_ocean       ! heat capacity 1m ocean  [J/K/m^2] 
+  real :: cap_land        ! heat capacity land   [J/K/m^2]
+  real :: cap_air         ! heat capacity air    [J/K/m^2]
+  real :: ct_sens         ! coupling for sensible heat
+  real :: da_ice          ! albedo diff for ice covered points
+  real :: a_no_ice        ! albedo for non-ice covered points
+  real :: a_cloud          ! albedo for clouds
+  real :: Tl_ice1         ! temperature range of land snow-albedo feedback
+  real :: Tl_ice2         ! temperature range of land snow-albedo feedback
+  real :: To_ice1         ! temperature range of ocean ice-albedo feedback
+  real :: To_ice2         ! temperature range of ocean ice-albedo feedback 
+  real :: co_turb         ! turbolent mixing to deep ocean [W/K/m^2]
+  real :: kappa           ! atmos. diffusion coefficient [m^2/s]
+  real :: ce              ! laten heat transfer coefficient for ocean
+  real :: cq_latent       ! latent heat of condensation/evapoartion f water [J/kg]
+  real :: cq_rain         ! decrease in air water vapor due to rain [1/s]
+  real :: z_air           ! scaling height atmos. heat, CO2
+  real :: z_vapor         ! scaling height atmos. water vapor diffusion
+  real :: r_qviwv         ! regres. factor between viwv and q_air  [kg/m^3]
 
 ! parameter emisivity
-  real, parameter, dimension(10) :: p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
-&                                             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
+  real, dimension(10) :: p_emi
 
 ! declare climate fields
   real, dimension(xdim,ydim)          ::  z_topo, glacier,z_ocean
@@ -113,6 +128,52 @@ module mo_physics
   real, dimension(xdim,ydim,nstep_yr) :: vclim_m, vclim_p 
 
   real :: t0, t1, t2
+
+  contains
+  subroutine init_default_mo_physics()
+    pi        = 3.1416   
+    sig       = 5.6704e-8      ! stefan-boltzmann constant [W/m^2/K^4]
+    rho_ocean = 999.1          ! density of water at T=15C [kg/m^2]
+    rho_land  = 2600.          ! density of solid rock [kg/m^2]
+    rho_air   = 1.2            ! density of air at 20C at NN 
+    cp_ocean  = 4186.          ! specific heat capacity of water at T=15C [J/kg/K]
+    cp_land   = cp_ocean/4.5   ! specific heat capacity of dry land [J/kg/K]
+    cp_air    = 1005.          ! specific heat capacity of air      [J/kg/K]
+    eps       = 1.             ! emissivity for IR
+    d_ocean   = 50.                      ! depth of ocean column [m]  
+    d_land    = 2.                       ! depth of land column  [m]
+    d_air     = 5000.                    ! depth of air column   [m]
+    cap_ocean = cp_ocean*rho_ocean       ! heat capacity 1m ocean  [J/K/m^2] 
+    cap_land  = cp_land*rho_land*d_land  ! heat capacity land   [J/K/m^2]
+    cap_air   = cp_air*rho_air*d_air     ! heat capacity air    [J/K/m^2]
+    ct_sens   = 22.5                     ! coupling for sensible heat
+    da_ice    = 0.25                     ! albedo diff for ice covered points
+    a_no_ice  = 0.1                      ! albedo for non-ice covered points
+    a_cloud   = 0.35                      ! albedo for clouds
+    Tl_ice1   = 273.15-10.               ! temperature range of land snow-albedo feedback
+    Tl_ice2   = 273.15                   ! temperature range of land snow-albedo feedback
+    To_ice1   = 273.15-7.                ! temperature range of ocean ice-albedo feedback
+    To_ice2   = 273.15-1.7               ! temperature range of ocean ice-albedo feedback 
+    co_turb   = 5.0                      ! turbolent mixing to deep ocean [W/K/m^2]
+    kappa     = 8e5                      ! atmos. diffusion coefficient [m^2/s]
+    ce        = 2e-3                     ! laten heat transfer coefficient for ocean
+    cq_latent = 2.257e6                  ! latent heat of condensation/evapoartion f water [J/kg]
+    cq_rain   = -0.1/24./3600.           ! decrease in air water vapor due to rain [1/s]
+    z_air     = 8400.                    ! scaling height atmos. heat, CO2
+    z_vapor   = 5000.                    ! scaling height atmos. water vapor diffusion
+    r_qviwv   = 2.6736e3                 ! regres. factor between viwv and q_air  [kg/m^3]
+    p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
+&             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
+  end subroutine init_default_mo_physics
+
+  subroutine namelist_mo_physics()
+    namelist / physics / pi, sig, rho_ocean, rho_land, rho_air, cp_ocean, cp_land, &
+&                        cp_air, eps, d_ocean, d_land, d_air, cap_ocean, cap_land, &
+&                        cap_air, ct_sens, da_ice, a_no_ice, a_cloud, Tl_ice1, &
+&                        Tl_ice2, To_ice1, To_ice2, co_turb, kappa, ce, cq_latent, &
+&                        cq_rain, z_air, z_vapor, r_qviwv, p_emi
+    read(10,physics)
+  end subroutine namelist_mo_physics
 
 end module mo_physics
 
@@ -139,7 +200,8 @@ subroutine greb_model
   use mo_numerics
   use mo_physics
   use mo_diagnostics
- 
+
+
 ! declare temporary fields
   real, dimension(xdim,ydim) :: Ts0, Ts1, Ta0, Ta1, To0, To1, q0, q1,       &
 &                               ts_ini, ta_ini, q_ini, to_ini       
@@ -205,7 +267,7 @@ subroutine greb_model
   end do
 
 ! scenario run
-  print*,'% SCENARIO EXP: ',log_exp,'  time=', time_scnr,'yr'
+  print*,'% SCENARIO; time=', time_scnr,'yr'
   Ts1 = Ts_ini; Ta1 = Ta_ini; q1 = q_ini; To1 = To_ini                     ! initialize fields
   year=1940; CO2=280.0; mon=1; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.; 
   do it=1, time_scnr*nstep_yr                                              ! main time loop

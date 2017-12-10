@@ -3,11 +3,15 @@
   USE mo_numerics
   USE mo_physics
 
+
+
 ! declare output fields
   real, dimension(xdim,ydim,ndays_yr) :: Tc1, Ta1, q1, ap1
   real, dimension(xdim,ydim,ndays_yr) :: Tc2, Ta2, q2, ap2
 
   integer, dimension(ndays_yr)::  t = (/(i,i=1,ndays_yr)/) ! jday index
+
+
 
 100 FORMAT('climate: ',F9.2, 5E12.4)
 
@@ -16,7 +20,6 @@
   ipx=46; ipy=24+8
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
    
-  open(10,file='namelist')
   open(11,file='input/tsurf',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(12,file='input/vapor',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(13,file='input/topography',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
@@ -28,8 +31,13 @@
   open(19,file='input/cloud.cover',     ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
-! read namelist 
-  read(10,numerics)
+  ! initialise modules 
+  open(10,file='namelist_simple')
+  call init_default_mo_physics
+  call init_default_mo_numerics
+  call namelist_mo_physics
+  call namelist_mo_numerics
+
 
 ! read fix data
   read(13,rec=1)  z_topo
@@ -56,6 +64,8 @@
   end forall
 
   print*,'% time flux/control/scenario: ', time_flux, time_ctrl, time_scnr  
+
+
   call greb_model
   
   END
