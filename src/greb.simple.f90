@@ -27,80 +27,6 @@
 !
 
 
-PROGRAM  greb_run
-
-  USE mo_numerics
-  USE mo_physics
-
-
-
-! declare output fields
-  real, dimension(xdim,ydim,ndays_yr) :: Tc1, Ta1, q1, ap1
-  real, dimension(xdim,ydim,ndays_yr) :: Tc2, Ta2, q2, ap2
-
-  integer, dimension(ndays_yr)::  t = (/(i,i=1,ndays_yr)/) ! jday index
-
-
-
-100 FORMAT('climate: ',F9.2, 5E12.4)
-
-   
-  open(11,file='input/tsurf',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(12,file='input/vapor',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(13,file='input/topography',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(14,file='input/soil.moisture',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(15,file='input/solar.radiation', ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*ydim*nstep_yr)
-  open(16,file='input/zonal.wind',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(17,file='input/meridional.wind', ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(18,file='input/ocean.mld',       ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(19,file='input/cloud.cover',     ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-
-  ! initialise modules, first set default parameter values, then read namelist
-  open(10,file='namelist_simple')
-  call init_default_mo_physics
-  call init_default_mo_numerics
-  call namelist_mo_physics
-  call namelist_mo_numerics
-
-  print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
-
-! read boundary value data from input files
-  read(13,rec=1)  z_topo
-  read(15,rec=1)  sw_solar
-  read(20,rec=1)  glacier
-
-  do n=1,nstep_yr
-     read(11,rec=n) tclim(:,:,n)
-     read(12,rec=n) qclim(:,:,n)
-     read(14,rec=n) swetclim(:,:,n)
-     read(16,rec=n) uclim(:,:,n)
-     read(17,rec=n) vclim(:,:,n)
-     read(18,rec=n) mldclim(:,:,n)
-     read(19,rec=n) cldclim(:,:,n)
-  end do
-
-! define deep ocean temp. as min of Tsurf but > 3.0 Celcius
-  forall (i=1:xdim, j=1:ydim)
-     Toclim(i,j,:) = minval(Tclim(i,j,:))
-  end forall
-  where (Toclim(:,:,1)-273.15 < -1.7) Toclim(:,:,1) = -1.7+273.15
-  forall (i=1:xdim, j=1:ydim)
-     Toclim(i,j,:) = Toclim(i,j,1)
-  end forall
-
-  print*,'% time flux/control/scenario: ', time_flux, time_ctrl, time_scnr  
-
-
-  call greb_model
-  
-END
-
-
-
-
-
-
 !+++++++++++++++++++++++++++++++++++++++
 module mo_numerics
 !+++++++++++++++++++++++++++++++++++++++
@@ -120,7 +46,6 @@ module mo_numerics
                                               ! ireal = 4 for Mac Book Pro 
 
   integer :: time_flux  = 0                ! length of integration for flux correction [yrs]
-  integer :: time_ctrl  = 0                ! length of integration for control run  [yrs]
   integer :: time_scnr  = 0                ! length of integration for scenario run [yrs]
   integer :: ipx        = 1                ! points for diagnostic print outs
   integer :: ipy        = 1                ! points for diagnostic print outs
@@ -128,14 +53,13 @@ module mo_numerics
   contains
   subroutine init_default_mo_numerics()
     time_flux = 0
-    time_ctrl = 0
     time_scnr = 0
     ipx       = 1
     ipy       = 1
   end subroutine init_default_mo_numerics
 
   subroutine namelist_mo_numerics()
-    namelist / numerics / ipx, ipy, time_flux, time_ctrl, time_scnr
+    namelist / numerics / ipx, ipy, time_flux, time_scnr
     read(10, numerics)
   end subroutine namelist_mo_numerics
 
@@ -259,12 +183,21 @@ module mo_diagnostics
 
   USE mo_numerics,    ONLY: xdim, ydim
 
- ! declare diagnostic fields
+  ! declare diagnostic fields
   real, dimension(xdim,ydim)          :: Tsmn, Tamn, qmn, swmn, lwmn, qlatmn, qsensmn, &
 &                                        ftmn, fqmn, amn, Tomn
 
-! declare output fields
+  ! declare output fields
   real, dimension(xdim,ydim)          :: Tmm, Tamm, Tomm, qmm, apmm
+
+  ! output file
+  character(len=120)                  :: output_file
+
+  contains
+  subroutine namelist_mo_diagnostics()
+    namelist / diagnostics / output_file
+    read(10, diagnostics)
+  end subroutine namelist_mo_diagnostics
 
 end module mo_diagnostics
 
@@ -282,8 +215,7 @@ subroutine greb_model
   real, dimension(xdim,ydim) :: Ts0, Ts1, Ta0, Ta1, To0, To1, q0, q1,       &
 &                               ts_ini, ta_ini, q_ini, to_ini       
 
-  open(21,file='output/control',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
-  open(22,file='output/scenario',ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(22,file=output_file,ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
   dTrad = -0.16*Tclim -5. ! offset Tatmos-rad
 
@@ -304,7 +236,6 @@ subroutine greb_model
   To_ini   = Toclim(:,:,nstep_yr)                         ! initial value temp. surf
   q_ini    = qclim(:,:,nstep_yr)                          ! initial value atmos water vapor
 
-  CO2_ctrl = 340.
 
   ! define some program constants
   wz_air   = exp(-z_topo/z_air)
@@ -325,25 +256,14 @@ subroutine greb_model
   end where
   
 ! compute Q-flux corrections
-  print*,'% flux correction ', CO2_ctrl
+  CO2_ctrl = 340.
+  print*,'% FLUX CORRECTION RUN; years = ', time_flux, ' co2 = ', CO2_ctrl
+  !print*,'% co2 for flux correction ', CO2_ctrl
   call qflux_correction(CO2_ctrl, Ts_ini, Ta_ini, q_ini, To_ini)
 
-! test write qflux
-  do irec=1, nstep_yr
-     write(21,rec=irec)  TF_correct(:,:,irec)
-  end do
-
-! control run
-  print*,'% CONTROL RUN CO2=',CO2_ctrl,'  time=', time_ctrl,'yr'
-  Ts1 = Ts_ini; Ta1 = Ta_ini; To1 = To_ini; q1 = q_ini;                   ! initialize fields
-  mon=1; year=1970; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.;  
-  do it=1, time_ctrl*nstep_yr                                             ! main time loop
-     call time_loop(it, isrec, year, CO2_ctrl, irec, mon, 21, Ts1, Ta1, q1, To1, Ts0,Ta0, q0, To0 ) 
-    Ts1=Ts0; Ta1=Ta0; q1=q0; To1=To0    
-  end do
-
 ! scenario run
-  print*,'% SCENARIO; time=', time_scnr,'yr'
+  print*,'% MODEL RUN; years = ', time_scnr
+  print*,'% saving output in file ', output_file
   Ts1 = Ts_ini; Ta1 = Ta_ini; q1 = q_ini; To1 = To_ini                     ! initialize fields
   year=1940; CO2=280.0; mon=1; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.; 
   do it=1, time_scnr*nstep_yr                                              ! main time loop
@@ -1056,6 +976,11 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
 
   ! declare temporary fields
   real, dimension(xdim,ydim)  :: Ts0, Ta0, To0, q0, sw, albedo, Q_sens, Q_lat,  LW_surf
+  integer :: first_output 
+
+   if (it == 1) then
+     print *, 'console output: year, global avg temp, avg temp for ipx/ipy'
+   end if
 
   ! diagnostics: annual means
   tsmn=tsmn+Ts0; tamn=tamn+ta0; tomn=tomn+to0; qmn=qmn+q0; amn=amn+albedo
@@ -1101,6 +1026,83 @@ subroutine output(it, iunit, irec, mon, ts0, ta0, to0, q0, albedo)
   end if
 
 end subroutine output
+
+
+
+
+!----------------------------------------------------------
+!   The main program
+!----------------------------------------------------------
+
+PROGRAM  greb_run
+
+  USE mo_numerics
+  USE mo_physics
+  USE mo_diagnostics
+
+
+
+! declare output fields
+  real, dimension(xdim,ydim,ndays_yr) :: Tc1, Ta1, q1, ap1
+  real, dimension(xdim,ydim,ndays_yr) :: Tc2, Ta2, q2, ap2
+
+  integer, dimension(ndays_yr)::  t = (/(i,i=1,ndays_yr)/) ! jday index
+
+
+
+100 FORMAT('climate: ',F9.2, 5E12.4)
+
+   
+  open(11,file='input/tsurf',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(12,file='input/vapor',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(13,file='input/topography',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(14,file='input/soil.moisture',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(15,file='input/solar.radiation', ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*ydim*nstep_yr)
+  open(16,file='input/zonal.wind',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(17,file='input/meridional.wind', ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(18,file='input/ocean.mld',       ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(19,file='input/cloud.cover',     ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+
+  ! initialise modules, first set default parameter values, then read namelist
+  open(10,file='namelist_simple')
+  call init_default_mo_physics
+  call init_default_mo_numerics
+  call namelist_mo_physics
+  call namelist_mo_numerics
+  call namelist_mo_diagnostics
+
+  print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
+
+! read boundary value data from input files
+  read(13,rec=1)  z_topo
+  read(15,rec=1)  sw_solar
+  read(20,rec=1)  glacier
+
+  do n=1,nstep_yr
+     read(11,rec=n) tclim(:,:,n)
+     read(12,rec=n) qclim(:,:,n)
+     read(14,rec=n) swetclim(:,:,n)
+     read(16,rec=n) uclim(:,:,n)
+     read(17,rec=n) vclim(:,:,n)
+     read(18,rec=n) mldclim(:,:,n)
+     read(19,rec=n) cldclim(:,:,n)
+  end do
+
+! define deep ocean temp. as min of Tsurf but > 3.0 Celcius
+  forall (i=1:xdim, j=1:ydim)
+     Toclim(i,j,:) = minval(Tclim(i,j,:))
+  end forall
+  where (Toclim(:,:,1)-273.15 < -1.7) Toclim(:,:,1) = -1.7+273.15
+  forall (i=1:xdim, j=1:ydim)
+     Toclim(i,j,:) = Toclim(i,j,1)
+  end forall
+
+  call greb_model
+  
+END
+
+
 
 
 

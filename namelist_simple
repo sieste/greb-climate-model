@@ -4,7 +4,9 @@
 ipx = 95 ! diagnostic output point, x-coord
 ipy = 38 ! diagnostic output point, y-coord
 time_flux = 3  ! length of flux corrections run [yrs]
-time_ctrl = 3  ! length of control run [yrs]
 time_scnr = 50 ! length of scenariorun [yrs]
+/
+&DIAGNOSTICS
+output_file = "output/scenario"
 /
 
