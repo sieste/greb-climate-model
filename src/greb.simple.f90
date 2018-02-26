@@ -27,7 +27,7 @@
 !
 
 
-PROGRAM  time_ex
+PROGRAM  greb_run
 
   USE mo_numerics
   USE mo_physics
@@ -44,8 +44,6 @@ PROGRAM  time_ex
 
 100 FORMAT('climate: ',F9.2, 5E12.4)
 
-  ipx=46; ipy=24+8
-  print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
    
   open(11,file='input/tsurf',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(12,file='input/vapor',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
@@ -65,8 +63,7 @@ PROGRAM  time_ex
   call namelist_mo_physics
   call namelist_mo_numerics
 
-  print*,'test namelist ', rho_ocean
-
+  print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
 
 ! read boundary value data from input files
   read(13,rec=1)  z_topo
@@ -138,7 +135,7 @@ module mo_numerics
   end subroutine init_default_mo_numerics
 
   subroutine namelist_mo_numerics()
-    namelist / numerics / time_flux, time_ctrl, time_scnr
+    namelist / numerics / ipx, ipy, time_flux, time_ctrl, time_scnr
     read(10, numerics)
   end subroutine namelist_mo_numerics
 
@@ -1055,9 +1052,9 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
 
   USE mo_numerics,    ONLY: ndays_yr, xdim, ydim, ipx ,ipy, ndt_days, nstep_yr
   USE mo_physics,     ONLY: ityr, TF_correct, qF_correct, cap_surf, Tclim
-  use mo_diagnostics
+  USE mo_diagnostics
 
-! declare temporary fields
+  ! declare temporary fields
   real, dimension(xdim,ydim)  :: Ts0, Ta0, To0, q0, sw, albedo, Q_sens, Q_lat,  LW_surf
 
   ! diagnostics: annual means
@@ -1070,7 +1067,7 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
      amn     = amn/nstep_yr;       swmn = swmn/nstep_yr;    lwmn = lwmn/nstep_yr;
      qlatmn  = qlatmn/nstep_yr; qsensmn = qsensmn/nstep_yr; ftmn = ftmn/nstep_yr;
      fqmn    = fqmn/nstep_yr;
-     print *, year, sum(tsmn)/(96*48)-273.15, tsmn(48,24+3)-273.15, tsmn(16,24+14)-273.15
+     print *, year, sum(tsmn)/(xdim*ydim)-273.15, tsmn(ipx,ipy)-273.15
      tsmn=0.; tamn=0.; qmn=0.; amn=0.; swmn=0.;        ! reset annual mean values
      lwmn=0.; qlatmn=0.; qsensmn=0.; ftmn=0.; fqmn=0.; ! reset annual mean values
   end if
