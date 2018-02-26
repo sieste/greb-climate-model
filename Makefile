@@ -29,7 +29,7 @@ greb: $(objdir)/greb.model.o
 
 greb-simple: $(objdir)/greb.simple.o
 	mkdir -p output
-	$(FC) $(DFLAGS) $(FLAGS) -o greb-simple $^ $(srcdir)/greb.shell.simple.f90 $(LFLAGS)
+	$(FC) $(DFLAGS) $(FLAGS) -o greb-simple $^ $(LFLAGS)
 
 
 clean:
