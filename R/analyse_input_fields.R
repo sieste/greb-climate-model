@@ -1,4 +1,6 @@
 source('functions.R')
+load('../data/ne_coast.Rdata')
+
 
 # read topography file (stationary global field)
 topo = read_greb('../input/topography', tstamps=as.Date('1900-01-01'), 
@@ -36,7 +38,8 @@ ggplot(wind_monavg) + facet_wrap(~month, ncol=3) +
 
 # plot wind field in orthogonal projection (centered at north pole)
 ggplot(wind_monavg %>% filter(month==6)) + 
-  geom_path(data=coast, mapping=aes(x=long, y=lat, group=id)) +
+  geom_path(data=ne_coast, mapping=aes(x=long, y=lat, group=id)) +
   geom_segment(aes(x=lon-u/4, y=lat-v/4, xend=lon+u/4, yend=lat+v/4), 
                arrow=arrow(length=unit(.15,'cm'))) +
   coord_map('ortho')
+

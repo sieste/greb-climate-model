@@ -1,9 +1,6 @@
 library(tidyverse)
 library(stringr)
 library(lubridate)
-library(rnaturalearth)
-
-coast = ne_coastline() %>% fortify %>% as_data_frame
 
 
 #' Read a variable from greb model output
@@ -106,3 +103,16 @@ wrap_lon = function(df, how=c('0_360', '-180_180')) {
   }
   return(df)
 }
+
+
+#' Get coastline data from rnaturalearth and save it
+#'
+#' Saving the coastline data frame avoids problems with rnaturalearth
+#'
+save_ne_coast = function(file = '../data/ne_coast.Rdata') {
+  stopifnot('rnaturalearth' %in% installed.packages())
+  ne_coast = rnaturalearth::ne_coastline() %>% fortify %>% as_data_frame
+  save(file=file, list='ne_coast')
+  invisible(NULL)
+}
+
