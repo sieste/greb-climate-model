@@ -21,7 +21,7 @@
 !    qclim(xdim,ydim,nstep_yr):   mean atmospheric humidity        [kg/kg]
 !  mldclim(xdim,ydim,nstep_yr):   mean ocean mixed layer depth     [m]
 !   Toclim(xdim,ydim,nstep_yr):   mean deep ocean temperature      [K]
-! swetclim(xdim,ydim,nstep_yr):   soil wetnees, fraction of total  [0-1]
+! swetclim(xdim,ydim,nstep_yr):   soil wetness, fraction of total  [0-1]
 ! sw_solar(ydim,nstep_yr):        24hrs mean solar radiation       [W/m^2]
 !
 !
@@ -44,8 +44,6 @@ PROGRAM  time_ex
 
 100 FORMAT('climate: ',F9.2, 5E12.4)
 
-  print*,'% start climate shell'
-
   ipx=46; ipy=24+8
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
    
@@ -60,15 +58,17 @@ PROGRAM  time_ex
   open(19,file='input/cloud.cover',     ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
-  ! initialise modules 
+  ! initialise modules, first set default parameter values, then read namelist
   open(10,file='namelist_simple')
   call init_default_mo_physics
   call init_default_mo_numerics
   call namelist_mo_physics
   call namelist_mo_numerics
 
+  print*,'test namelist ', rho_ocean
 
-! read fix data
+
+! read boundary value data from input files
   read(13,rec=1)  z_topo
   read(15,rec=1)  sw_solar
   read(20,rec=1)  glacier
@@ -192,7 +192,7 @@ module mo_physics
   real, dimension(10) :: p_emi
 
 ! declare climate fields
-  real, dimension(xdim,ydim)          ::  z_topo, glacier,z_ocean
+  real, dimension(xdim,ydim)          ::  z_topo, glacier, z_ocean
   real, dimension(xdim,ydim,nstep_yr) ::  Tclim, uclim, vclim, qclim, mldclim, Toclim, cldclim
   real, dimension(xdim,ydim,nstep_yr) ::  TF_correct, qF_correct, ToF_correct, swetclim, dTrad
   real, dimension(ydim,nstep_yr)      ::  sw_solar
@@ -216,7 +216,7 @@ module mo_physics
     rho_land  = 2600.          ! density of solid rock [kg/m^2]
     rho_air   = 1.2            ! density of air at 20C at NN 
     cp_ocean  = 4186.          ! specific heat capacity of water at T=15C [J/kg/K]
-    cp_land   = cp_ocean/4.5   ! specific heat capacity of dry land [J/kg/K]
+    cp_land   = 926.222        ! specific heat capacity of dry land [J/kg/K] default: cp_ocean/4.5
     cp_air    = 1005.          ! specific heat capacity of air      [J/kg/K]
     eps       = 1.             ! emissivity for IR
     d_ocean   = 50.                      ! depth of ocean column [m]  
@@ -228,12 +228,12 @@ module mo_physics
     ct_sens   = 22.5                     ! coupling for sensible heat
     da_ice    = 0.25                     ! albedo diff for ice covered points
     a_no_ice  = 0.1                      ! albedo for non-ice covered points
-    a_cloud   = 0.35                      ! albedo for clouds
+    a_cloud   = 0.35                     ! albedo for clouds
     Tl_ice1   = 273.15-10.               ! temperature range of land snow-albedo feedback
     Tl_ice2   = 273.15                   ! temperature range of land snow-albedo feedback
     To_ice1   = 273.15-7.                ! temperature range of ocean ice-albedo feedback
     To_ice2   = 273.15-1.7               ! temperature range of ocean ice-albedo feedback 
-    co_turb   = 5.0                      ! turbolent mixing to deep ocean [W/K/m^2]
+    co_turb   = 5.0                      ! turbulent mixing to deep ocean [W/K/m^2]
     kappa     = 8e5                      ! atmos. diffusion coefficient [m^2/s]
     ce        = 2e-3                     ! laten heat transfer coefficient for ocean
     cq_latent = 2.257e6                  ! latent heat of condensation/evapoartion f water [J/kg]
