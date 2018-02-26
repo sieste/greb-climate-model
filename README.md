@@ -1,6 +1,6 @@
 # Globally Resolved Energy Balance (GREB) Climate Model
 
-GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. The [source code](src/greb.model.f90) is less than 1000 lines of fortran, and the model currently runs at about 1 simulated year per second on a standard laptop.
+GREB is a very simple, globally resolved energy balance model, which is capable of simulating the main characteristics of global climate change. The model fills the gap between strongly simplified 1d energy balance models and fully coupled 4-dimensional climate models. The [source code](src/greb.f90) is about 1000 lines of fortran, and the model currently runs at about 1 simulated year per second on a standard laptop.
 
 *Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change with a Globally Resolved Energy Balance Model. Climate dynamics, 2011, 37, 2143-2165.* [link](http://users.monash.edu.au/~dietmard/papers/dommenget.and.floeter.greb.paper.cdym2011.pdf), [pdf (not on github)](dommenget2011greb.pdf) 
 
