@@ -13,6 +13,8 @@ make greb
 
 Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and albedo in the file `output/scenario`.
 
+I have altered the original `greb` code quite substantially. To run the original code (with only minor modifications), use the make target `greb-original`.
+
 
 ## R analysis code 
 
