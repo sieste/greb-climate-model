@@ -5,6 +5,7 @@
 !
 !   Authors; Dietmar Dommenget and Janine Flöter 
 !            with numerical opitmizations by Micheal Rezny
+!            and a few modifications by Stefan Siegert
 !
 !   Reference: Conceptual Understanding of Climate Change with a Globally Resolved Energy Balance Model
 !            by Dietmar Dommenget and Janine Flöter, submitted to Climate Dynamics 2010.
@@ -976,7 +977,6 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
 
   ! declare temporary fields
   real, dimension(xdim,ydim)  :: Ts0, Ta0, To0, q0, sw, albedo, Q_sens, Q_lat,  LW_surf
-  integer :: first_output 
 
    if (it == 1) then
      print *, 'console output: year, global avg temp, avg temp for ipx/ipy'
