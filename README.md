@@ -86,7 +86,7 @@ Glaciers are prescribed, they do not grow or melt.
 ### Winds
 
 Wind fields are prescribed, two fields per day, repeated each year.
-Wind only acts to redistribute heat and moisture through advection.
+Wind fields only acts to redistribute heat and moisture through advection.
 
 
 
