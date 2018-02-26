@@ -16,7 +16,7 @@
   ipx=46; ipy=24+8
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
    
-  open(10,file='namelist')
+  open(10,file='namelist_original')
   open(11,file='input/tsurf',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(12,file='input/vapor',           ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(13,file='input/topography',      ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)

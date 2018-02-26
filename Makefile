@@ -14,24 +14,24 @@ endif
 
 
 ## Individual libraries or modules ##
-$(objdir)/greb.model.o: $(srcdir)/greb.model.f90
+$(objdir)/greb.original.model.o: $(srcdir)/greb.original.model.f90
 	@mkdir -p $(@D)
 	$(FC) $(DFLAGS) $(FLAGS) -c -o $@ $<
 
-$(objdir)/greb.simple.o: $(srcdir)/greb.simple.f90
+$(objdir)/greb.o: $(srcdir)/greb.f90
 	@mkdir -p $(@D)
 	$(FC) $(DFLAGS) $(FLAGS) -c -o $@ $<
 
 ## greb executable
-greb: $(objdir)/greb.model.o
+greb-original: $(objdir)/greb.original.model.o
 	mkdir -p output
-	$(FC) $(DFLAGS) $(FLAGS) -o greb $^ $(srcdir)/greb.shell.web-public.f90 $(LFLAGS)
+	$(FC) $(DFLAGS) $(FLAGS) -o greb-original $^ $(srcdir)/greb.original.shell.web-public.f90 $(LFLAGS)
 
-greb-simple: $(objdir)/greb.simple.o
+greb: $(objdir)/greb.o
 	mkdir -p output
-	$(FC) $(DFLAGS) $(FLAGS) -o greb-simple $^ $(LFLAGS)
+	$(FC) $(DFLAGS) $(FLAGS) -o greb $^ $(LFLAGS)
 
 
 clean:
-	rm -f greb $(objdir)/*.o $(objdir)/*.mod
+	rm -f greb greb-original $(objdir)/*.o $(objdir)/*.mod
 	rm -rf $(objdir)

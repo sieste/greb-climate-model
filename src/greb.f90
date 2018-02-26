@@ -1065,7 +1065,7 @@ PROGRAM  greb_run
   open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
   ! initialise modules, first set default parameter values, then read namelist
-  open(10,file='namelist_simple')
+  open(10,file='namelist')
   call init_default_mo_physics
   call init_default_mo_numerics
   call namelist_mo_physics
