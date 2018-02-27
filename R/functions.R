@@ -1,6 +1,7 @@
 library(tidyverse)
 library(stringr)
 library(lubridate)
+library(mapproj)
 
 
 #' Read a variable from greb model output
