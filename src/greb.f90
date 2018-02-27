@@ -192,12 +192,27 @@ module mo_diagnostics
   real, dimension(xdim,ydim)          :: Tmm, Tamm, Tomm, qmm, apmm
 
   ! output file
-  character(len=120)                  :: output_file
+  character(len=120)                  :: output_file ! up to 120 characters
+  character(len=10)                   :: ens_id      ! up to 10 characters
+  character(len=130)                  :: output_file_full
 
   contains
+
+  subroutine init_default_mo_diagnostics()
+    output_file = 'output/scenario'
+    ens_id      = ''
+  end subroutine init_default_mo_diagnostics
+
   subroutine namelist_mo_diagnostics()
-    namelist / diagnostics / output_file
+    namelist / diagnostics / output_file, ens_id
     read(10, diagnostics)
+
+    if (len_trim(ens_id) == 0) then
+      output_file_full = trim(output_file)
+    else
+      output_file_full = trim(output_file) // '_' // trim(ens_id)
+    end if
+
   end subroutine namelist_mo_diagnostics
 
 end module mo_diagnostics
@@ -216,7 +231,7 @@ subroutine greb_model
   real, dimension(xdim,ydim) :: Ts0, Ts1, Ta0, Ta1, To0, To1, q0, q1,       &
 &                               ts_ini, ta_ini, q_ini, to_ini       
 
-  open(22,file=output_file,ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
+  open(22, file=output_file_full, ACCESS='DIRECT', FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
   dTrad = -0.16*Tclim -5. ! offset Tatmos-rad
 
@@ -264,7 +279,7 @@ subroutine greb_model
 
 ! scenario run
   print*,'% MODEL RUN; years = ', time_scnr
-  print*,'% saving output in file ', output_file
+  print*,'% saving output in file ', output_file_full 
   Ts1 = Ts_ini; Ta1 = Ta_ini; q1 = q_ini; To1 = To_ini                     ! initialize fields
   year=1940; CO2=280.0; mon=1; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.; 
   do it=1, time_scnr*nstep_yr                                              ! main time loop
@@ -1068,6 +1083,7 @@ PROGRAM  greb_run
   open(10,file='namelist')
   call init_default_mo_physics
   call init_default_mo_numerics
+  call init_default_mo_diagnostics
   call namelist_mo_physics
   call namelist_mo_numerics
   call namelist_mo_diagnostics
