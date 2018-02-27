@@ -50,10 +50,10 @@ The following parameters can be set, default values are shown:
 
 ```
 &NUMERICS
-time_flux  = 0                ! length of integration for flux correction [yrs]
-time_scnr  = 0                ! length of integration for scenario run [yrs]
-ipx        = 1                ! point to use for console print out
-ipy        = 1                ! point to use for console print out
+  time_flux  = 0                ! length of integration for flux correction [yrs]
+  time_scnr  = 0                ! length of integration for scenario run [yrs]
+  ipx        = 1                ! point to use for console print out
+  ipy        = 1                ! point to use for console print out
 /
 ```
 
@@ -61,8 +61,8 @@ ipy        = 1                ! point to use for console print out
 
 ```
 &DIAGNOSTICS
-output_file = "output/scenario"  ! output file name
-ens_id = ""                      ! a suffix appended to output_file
+  output_file = "output/scenario"  ! output file name
+  ens_id = ""                      ! a suffix appended to output_file
 /
 ```
 
