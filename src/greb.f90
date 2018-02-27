@@ -1063,6 +1063,9 @@ PROGRAM  greb_run
 
   integer, dimension(ndays_yr)::  t = (/(i,i=1,ndays_yr)/) ! jday index
 
+  ! namelist variables
+  integer :: arg1_length
+  character(:), allocatable :: namelist_filename
 
 
 100 FORMAT('climate: ',F9.2, 5E12.4)
@@ -1079,8 +1082,20 @@ PROGRAM  greb_run
   open(19,file='input/cloud.cover',     ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
   open(20,file='input/glacier.masks',   ACCESS='DIRECT',FORM='UNFORMATTED', RECL=ireal*xdim*ydim)
 
+
+  ! check if namelist file was provided as an input argument, otherwise use
+  ! 'namelist' as default
+  call get_command_argument(1, length=arg1_length) 
+  if (arg1_length == 0) then
+    namelist_filename = 'namelist'
+  else
+    allocate(character(arg1_length) :: namelist_filename)
+    call get_command_argument(1, value=namelist_filename)
+  end if
+
+
   ! initialise modules, first set default parameter values, then read namelist
-  open(10,file='namelist')
+  open(10,file=namelist_filename,action='read')
   call init_default_mo_physics
   call init_default_mo_numerics
   call init_default_mo_diagnostics
