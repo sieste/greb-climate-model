@@ -51,16 +51,19 @@ module mo_numerics
   integer :: ipx        = 1                ! points for diagnostic print outs
   integer :: ipy        = 1                ! points for diagnostic print outs
 
+  integer :: year0      = 0
+
   contains
   subroutine init_default_mo_numerics()
     time_flux = 0
     time_scnr = 0
     ipx       = 1
     ipy       = 1
+    year0     = 1940
   end subroutine init_default_mo_numerics
 
   subroutine namelist_mo_numerics()
-    namelist / numerics / ipx, ipy, time_flux, time_scnr
+    namelist / numerics / ipx, ipy, time_flux, time_scnr, year0
     read(10, numerics)
   end subroutine namelist_mo_numerics
 
@@ -281,7 +284,7 @@ subroutine greb_model
   print*,'% MODEL RUN; years = ', time_scnr
   print*,'% saving output in file ', output_file_full 
   Ts1 = Ts_ini; Ta1 = Ta_ini; q1 = q_ini; To1 = To_ini                     ! initialize fields
-  year=1940; CO2=280.0; mon=1; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.; 
+  year=year0; CO2=280.0; mon=1; irec=0; Tmm=0.; Tamm=0.; qmm=0.; apmm=0.; 
   do it=1, time_scnr*nstep_yr                                              ! main time loop
      call co2_level(it, year, CO2)
 
