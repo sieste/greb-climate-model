@@ -4,5 +4,6 @@ greb
 greb-original
 .*.swp
 dommenget2011greb.pdf
-output
+output/*
+!output/README
 _test
