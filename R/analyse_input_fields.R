@@ -1,9 +1,9 @@
-source('functions.R')
-load('../data/ne_coast.Rdata')
+source('R/functions.R')
+load('data/ne_coast.Rdata')
 
 
 # read topography file (stationary global field)
-topo = read_greb('../input/topography', tstamps=as.Date('1900-01-01'), 
+topo = read_greb('input/topography', tstamps=as.Date('1900-01-01'), 
                  varname='topo', ivar=1, nvar=1)
 topo = topo %>% mutate(type = ifelse(topo<0, 'ocean', 'land'))
 
@@ -13,8 +13,8 @@ ggplot(topo) + geom_raster(aes(x=lon, y=lat, fill=type))
 
 # read wind fields (global field, twice daily for one year)
 tstamps = seq(from=as.POSIXlt('1900-01-01 00:00'), to=as.POSIXlt('1900-12-31 12:00'), len=2*365)
-ufield  = read_greb(file='../input/zonal.wind', tstamps=tstamps, ivar=1, nvar=1, varname='u')
-vfield  = read_greb(file='../input/meridional.wind', tstamps=tstamps, ivar=1, nvar=1, varname='v')
+ufield  = read_greb(file='input/zonal.wind', tstamps=tstamps, ivar=1, nvar=1, varname='u')
+vfield  = read_greb(file='input/meridional.wind', tstamps=tstamps, ivar=1, nvar=1, varname='v')
 wind    = ufield %>% mutate(v = vfield$v)
 
 # plot only the first wind field
