@@ -65,43 +65,40 @@ module mo_physics
   use mo_numerics
 
 ! physical parameter (natural constants)
-  real :: pi                    
-  real :: sig            ! stefan-boltzmann constant [W/m^2/K^4]
-  real :: rho_ocean      ! density of water at T=15C [kg/m^2]
-  real :: rho_land       ! density of solid rock [kg/m^2]
-  real :: rho_air        ! density of air at 20C at NN 
-  real :: cp_ocean       ! specific heat capacity of water at T=15C [J/kg/K]
-  real :: cp_land        ! specific heat capacity of dry land [J/kg/K]
-  real :: cp_air         ! specific heat capacity of air      [J/kg/K]
-  real :: eps            ! emissivity for IR
-
+  real :: pi        = 3.1416   
+  real :: sig       = 5.6704e-8      ! stefan-boltzmann constant [W/m^2/K^4]
+  real :: rho_ocean = 999.1          ! density of water at T=15C [kg/m^2]
+  real :: rho_land  = 2600.          ! density of solid rock [kg/m^2]
+  real :: rho_air   = 1.2            ! density of air at 20C at NN 
+  real :: cp_ocean  = 4186.          ! specific heat capacity of water at T=15C [J/kg/K]
+  real :: cp_land   = 926.222        ! specific heat capacity of dry land [J/kg/K]
+  real :: cp_air    = 1005.          ! specific heat capacity of air      [J/kg/K]
+  real :: eps       = 1.             ! emissivity for IR
 
 ! physical parameter (model values)
-  real :: d_ocean         ! depth of ocean column [m]  
-  real :: d_land          ! depth of land column  [m]
-  real :: d_air           ! depth of air column   [m]
-  real :: cap_ocean       ! heat capacity 1m ocean  [J/K/m^2] 
-  real :: cap_land        ! heat capacity land   [J/K/m^2]
-  real :: cap_air         ! heat capacity air    [J/K/m^2]
-  real :: ct_sens         ! coupling for sensible heat
-  real :: da_ice          ! albedo diff for ice covered points
-  real :: a_no_ice        ! albedo for non-ice covered points
-  real :: a_cloud          ! albedo for clouds
-  real :: Tl_ice1         ! temperature range of land snow-albedo feedback
-  real :: Tl_ice2         ! temperature range of land snow-albedo feedback
-  real :: To_ice1         ! temperature range of ocean ice-albedo feedback
-  real :: To_ice2         ! temperature range of ocean ice-albedo feedback 
-  real :: co_turb         ! turbolent mixing to deep ocean [W/K/m^2]
-  real :: kappa           ! atmos. diffusion coefficient [m^2/s]
-  real :: ce              ! laten heat transfer coefficient for ocean
-  real :: cq_latent       ! latent heat of condensation/evapoartion f water [J/kg]
-  real :: cq_rain         ! decrease in air water vapor due to rain [1/s]
-  real :: z_air           ! scaling height atmos. heat, CO2
-  real :: z_vapor         ! scaling height atmos. water vapor diffusion
-  real :: r_qviwv         ! regres. factor between viwv and q_air  [kg/m^3]
+  real :: d_ocean   = 50.                      ! depth of ocean column [m]  
+  real :: d_land    = 2.                       ! depth of land column  [m]
+  real :: d_air     = 5000.                    ! depth of air column   [m]
+  real :: ct_sens   = 22.5                     ! coupling for sensible heat
+  real :: da_ice    = 0.25                     ! albedo diff for ice covered points
+  real :: a_no_ice  = 0.1                      ! albedo for non-ice covered points
+  real :: a_cloud   = 0.35                     ! albedo for clouds
+  real :: Tl_ice1   = 273.15-10.               ! temperature range of land snow-albedo feedback
+  real :: Tl_ice2   = 273.15                   ! temperature range of land snow-albedo feedback
+  real :: To_ice1   = 273.15-7.                ! temperature range of ocean ice-albedo feedback
+  real :: To_ice2   = 273.15-1.7               ! temperature range of ocean ice-albedo feedback 
+  real :: co_turb   = 5.0                      ! turbulent mixing to deep ocean [W/K/m^2]
+  real :: kappa     = 8e5                      ! atmos. diffusion coefficient [m^2/s]
+  real :: ce        = 2e-3                     ! laten heat transfer coefficient for ocean
+  real :: cq_latent = 2.257e6                  ! latent heat of condensation/evapoartion f water [J/kg]
+  real :: cq_rain   = -0.1/24./3600.           ! decrease in air water vapor due to rain [1/s]
+  real :: z_air     = 8400.                    ! scaling height atmos. heat, CO2
+  real :: z_vapor   = 5000.                    ! scaling height atmos. water vapor diffusion
+  real :: r_qviwv   = 2.6736e3                 ! regres. factor between viwv and q_air  [kg/m^3]
 
 ! parameter emisivity
-  real, dimension(10) :: p_emi
+  real, dimension(10) :: p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
+&             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
 
 ! declare climate fields
   real, dimension(xdim,ydim)          ::  z_topo, glacier, z_ocean
@@ -118,53 +115,22 @@ module mo_physics
   real, dimension(xdim,ydim,nstep_yr) :: uclim_m, uclim_p 
   real, dimension(xdim,ydim,nstep_yr) :: vclim_m, vclim_p 
 
+  real :: cap_ocean                            ! heat capacity 1m ocean  [J/K/m^2] 
+  real :: cap_land                             ! heat capacity land   [J/K/m^2]
+  real :: cap_air                              ! heat capacity air    [J/K/m^2]
+
   real :: t0, t1, t2
 
-  contains
-  subroutine init_default_mo_physics()
-    pi        = 3.1416   
-    sig       = 5.6704e-8      ! stefan-boltzmann constant [W/m^2/K^4]
-    rho_ocean = 999.1          ! density of water at T=15C [kg/m^2]
-    rho_land  = 2600.          ! density of solid rock [kg/m^2]
-    rho_air   = 1.2            ! density of air at 20C at NN 
-    cp_ocean  = 4186.          ! specific heat capacity of water at T=15C [J/kg/K]
-    cp_land   = 926.222        ! specific heat capacity of dry land [J/kg/K] default: cp_ocean/4.5
-    cp_air    = 1005.          ! specific heat capacity of air      [J/kg/K]
-    eps       = 1.             ! emissivity for IR
-    d_ocean   = 50.                      ! depth of ocean column [m]  
-    d_land    = 2.                       ! depth of land column  [m]
-    d_air     = 5000.                    ! depth of air column   [m]
-    cap_ocean = cp_ocean*rho_ocean       ! heat capacity 1m ocean  [J/K/m^2] 
-    cap_land  = cp_land*rho_land*d_land  ! heat capacity land   [J/K/m^2]
-    cap_air   = cp_air*rho_air*d_air     ! heat capacity air    [J/K/m^2]
-    ct_sens   = 22.5                     ! coupling for sensible heat
-    da_ice    = 0.25                     ! albedo diff for ice covered points
-    a_no_ice  = 0.1                      ! albedo for non-ice covered points
-    a_cloud   = 0.35                     ! albedo for clouds
-    Tl_ice1   = 273.15-10.               ! temperature range of land snow-albedo feedback
-    Tl_ice2   = 273.15                   ! temperature range of land snow-albedo feedback
-    To_ice1   = 273.15-7.                ! temperature range of ocean ice-albedo feedback
-    To_ice2   = 273.15-1.7               ! temperature range of ocean ice-albedo feedback 
-    co_turb   = 5.0                      ! turbulent mixing to deep ocean [W/K/m^2]
-    kappa     = 8e5                      ! atmos. diffusion coefficient [m^2/s]
-    ce        = 2e-3                     ! laten heat transfer coefficient for ocean
-    cq_latent = 2.257e6                  ! latent heat of condensation/evapoartion f water [J/kg]
-    cq_rain   = -0.1/24./3600.           ! decrease in air water vapor due to rain [1/s]
-    z_air     = 8400.                    ! scaling height atmos. heat, CO2
-    z_vapor   = 5000.                    ! scaling height atmos. water vapor diffusion
-    r_qviwv   = 2.6736e3                 ! regres. factor between viwv and q_air  [kg/m^3]
-    p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
-&             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
-  end subroutine init_default_mo_physics
-
-  subroutine namelist_mo_physics()
     namelist / physics / pi, sig, rho_ocean, rho_land, rho_air, cp_ocean, cp_land, &
-&                        cp_air, eps, d_ocean, d_land, d_air, cap_ocean, cap_land, &
-&                        cap_air, ct_sens, da_ice, a_no_ice, a_cloud, Tl_ice1, &
+&                        cp_air, eps, d_ocean, d_land, d_air,                      &
+&                        ct_sens, da_ice, a_no_ice, a_cloud, Tl_ice1,              &
 &                        Tl_ice2, To_ice1, To_ice2, co_turb, kappa, ce, cq_latent, &
 &                        cq_rain, z_air, z_vapor, r_qviwv, p_emi
-    read(10,physics)
-  end subroutine namelist_mo_physics
+
+  contains
+
+  subroutine init_mo_physics_derived_pars()
+  end subroutine init_mo_physics_derived_pars
 
 end module mo_physics
 
@@ -182,28 +148,21 @@ module mo_diagnostics
   real, dimension(xdim,ydim)          :: Tmm, Tamm, Tomm, qmm, apmm
 
   ! output file
-  character(len=120)                  :: output_file ! up to 120 characters
-  character(len=10)                   :: ens_id      ! up to 10 characters
-  character(len=130)                  :: output_file_full
+  character(len=120)  :: output_file = 'output/scenario'
+  character(len=10)   :: ens_id      = ''
+  character(len=130)  :: output_file_full
+
+  namelist / diagnostic / output_file, ens_id
 
   contains
 
-  subroutine init_default_mo_diagnostics()
-    output_file = 'output/scenario'
-    ens_id      = ''
-  end subroutine init_default_mo_diagnostics
-
-  subroutine namelist_mo_diagnostics()
-    namelist / diagnostics / output_file, ens_id
-    read(10, diagnostics)
-
+  subroutine set_output_file_full
     if (len_trim(ens_id) == 0) then
       output_file_full = trim(output_file)
     else
       output_file_full = trim(output_file) // '_' // trim(ens_id)
     end if
-
-  end subroutine namelist_mo_diagnostics
+  end subroutine set_output_file_full
 
 end module mo_diagnostics
 
@@ -232,6 +191,10 @@ subroutine greb_model
   end do
   z_ocean = 3.0*z_ocean
 
+  ! set heat capacities
+  cap_ocean = cp_ocean*rho_ocean       
+  cap_land  = cp_land*rho_land*d_land  
+  cap_air   = cp_air*rho_air*d_air     
 ! heat capacity global [J/K/m^2]
   where (z_topo  > 0.) cap_surf = cap_land
   where (z_topo <= 0.) cap_surf = cap_ocean*mldclim(:,:,1)
@@ -1086,11 +1049,12 @@ PROGRAM  greb_run
 
   ! initialise modules, first set default parameter values, then read namelist
   open(10,file=namelist_filename,action='read')
-  call init_default_mo_physics
-  call init_default_mo_diagnostics
-  call namelist_mo_physics
+  read(10, physics)
   read(10, numerics)
-  call namelist_mo_diagnostics
+  read(10, diagnostic)
+  close(10)
+
+  call set_output_file_full
 
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
 
