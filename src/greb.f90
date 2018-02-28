@@ -115,9 +115,9 @@ module mo_physics
   real, dimension(xdim,ydim,nstep_yr) :: uclim_m, uclim_p 
   real, dimension(xdim,ydim,nstep_yr) :: vclim_m, vclim_p 
 
-  real :: cap_ocean                            ! heat capacity 1m ocean  [J/K/m^2] 
-  real :: cap_land                             ! heat capacity land   [J/K/m^2]
-  real :: cap_air                              ! heat capacity air    [J/K/m^2]
+  real :: cap_ocean        ! heat capacity 1m ocean  [J/K/m^2] 
+  real :: cap_land         ! heat capacity land   [J/K/m^2]
+  real :: cap_air          ! heat capacity air    [J/K/m^2]
 
   real :: t0, t1, t2
 
