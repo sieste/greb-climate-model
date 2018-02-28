@@ -127,11 +127,6 @@ module mo_physics
 &                        Tl_ice2, To_ice1, To_ice2, co_turb, kappa, ce, cq_latent, &
 &                        cq_rain, z_air, z_vapor, r_qviwv, p_emi
 
-  contains
-
-  subroutine init_mo_physics_derived_pars()
-  end subroutine init_mo_physics_derived_pars
-
 end module mo_physics
 
 !+++++++++++++++++++++++++++++++++++++++
