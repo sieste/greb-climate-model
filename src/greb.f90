@@ -52,7 +52,7 @@ module mo_numerics
   integer :: ipy        = 1                ! points for diagnostic print outs
   integer :: year0      = 1940             ! start year
 
-  namelist / numerics / ipx, ipy, time_flux, time_scnr, year0
+  namelist / numerics_par / ipx, ipy, time_flux, time_scnr, year0
 
 end module mo_numerics
 
@@ -100,6 +100,9 @@ module mo_physics
   real, dimension(10) :: p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
 &             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
 
+  ! co2 concentration time series
+  real, dimension(:),allocatable :: co2_ppm
+
 ! declare climate fields
   real, dimension(xdim,ydim)          ::  z_topo, glacier, z_ocean
   real, dimension(xdim,ydim,nstep_yr) ::  Tclim, uclim, vclim, qclim, mldclim, Toclim, cldclim
@@ -121,11 +124,13 @@ module mo_physics
 
   real :: t0, t1, t2
 
-    namelist / physics / pi, sig, rho_ocean, rho_land, rho_air, cp_ocean, cp_land, &
+    namelist / physics_par / pi, sig, rho_ocean, rho_land, rho_air, cp_ocean, cp_land, &
 &                        cp_air, eps, d_ocean, d_land, d_air,                      &
 &                        ct_sens, da_ice, a_no_ice, a_cloud, Tl_ice1,              &
 &                        Tl_ice2, To_ice1, To_ice2, co_turb, kappa, ce, cq_latent, &
 &                        cq_rain, z_air, z_vapor, r_qviwv, p_emi
+
+    namelist / co2_par / co2_ppm
 
 end module mo_physics
 
@@ -147,17 +152,7 @@ module mo_diagnostics
   character(len=10)   :: ens_id      = ''
   character(len=130)  :: output_file_full
 
-  namelist / diagnostic / output_file, ens_id
-
-  contains
-
-  subroutine set_output_file_full
-    if (len_trim(ens_id) == 0) then
-      output_file_full = trim(output_file)
-    else
-      output_file_full = trim(output_file) // '_' // trim(ens_id)
-    end if
-  end subroutine set_output_file_full
+  namelist / diagnostics_par / output_file, ens_id
 
 end module mo_diagnostics
 
@@ -923,9 +918,10 @@ end subroutine advection
 subroutine co2_level(it, year, CO2)
 !+++++++++++++++++++++++++++++++++++++++
 
-  USE mo_numerics,    ONLY: ndays_yr, ndt_days
+  USE mo_numerics,    ONLY: ndays_yr, ndt_days, year0
+  use mo_physics,     only: co2_ppm
 
-  CO2 = 680.
+  CO2 = co2_ppm(int(year - year0 + 1))
 
 end subroutine co2_level
 
@@ -942,7 +938,7 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
   real, dimension(xdim,ydim)  :: Ts0, Ta0, To0, q0, sw, albedo, Q_sens, Q_lat,  LW_surf
 
    if (it == 1) then
-     print *, 'console output: year, global avg temp, avg temp for ipx/ipy'
+     print *, 'console output: year, co2, global avg temp, avg temp for ipx/ipy'
    end if
 
   ! diagnostics: annual means
@@ -955,7 +951,7 @@ subroutine diagnostics(it, year, CO2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_
      amn     = amn/nstep_yr;       swmn = swmn/nstep_yr;    lwmn = lwmn/nstep_yr;
      qlatmn  = qlatmn/nstep_yr; qsensmn = qsensmn/nstep_yr; ftmn = ftmn/nstep_yr;
      fqmn    = fqmn/nstep_yr;
-     print *, year, sum(tsmn)/(xdim*ydim)-273.15, tsmn(ipx,ipy)-273.15
+     print *, year, co2, sum(tsmn)/(xdim*ydim)-273.15, tsmn(ipx,ipy)-273.15
      tsmn=0.; tamn=0.; qmn=0.; amn=0.; swmn=0.;        ! reset annual mean values
      lwmn=0.; qlatmn=0.; qsensmn=0.; ftmn=0.; fqmn=0.; ! reset annual mean values
   end if
@@ -1044,12 +1040,32 @@ PROGRAM  greb_run
 
   ! initialise modules, first set default parameter values, then read namelist
   open(10,file=namelist_filename,action='read')
-  read(10, physics)
-  read(10, numerics)
-  read(10, diagnostic)
+  read(10, physics_par)
+  read(10, numerics_par)
+  read(10, diagnostics_par)
+  ! allocate co2 concentration vector, initialise to -1
+  allocate(co2_ppm(time_scnr))
+  co2_ppm(:) = -1
+  read(10, co2_par)
   close(10)
 
-  call set_output_file_full
+  ! set all negative co2 values to the last positive one
+  if (co2_ppm(1) == -1) then
+    co2_ppm(1) = 680 ! so that default is constant double co2
+  end if
+  do i=2,time_scnr
+     if (co2_ppm(i) < 0) then
+       co2_ppm(i:time_scnr) = co2_ppm(i-1)
+       exit
+     end if
+  end do
+  
+  !set output_file_full by combining output_file and ens_id
+  if (len_trim(ens_id) == 0) then
+    output_file_full = trim(output_file)
+  else
+    output_file_full = trim(output_file) // '_' // trim(ens_id)
+  end if
 
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
 

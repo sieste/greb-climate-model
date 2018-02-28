@@ -10,7 +10,7 @@ The following parameters can be set, default values are shown:
 ## PHYSICS
 
 ```
-&PHYSICS
+&PHYSICS_PAR
   pi        = 3.1416   
   sig       = 5.6704e-8      ! stefan-boltzmann constant [W/m^2/K^4]
   rho_ocean = 999.1          ! density of water at T=15C [kg/m^2]
@@ -46,7 +46,7 @@ The following parameters can be set, default values are shown:
 ## NUMERICS 
 
 ```
-&NUMERICS
+&NUMERICS_PAR
   ipx        = 1                ! point to use for console print out
   ipy        = 1                ! point to use for console print out
   time_flux  = 0                ! length of integration for flux correction [yrs]
@@ -55,14 +55,27 @@ The following parameters can be set, default values are shown:
 /
 ```
 
-## DIAGNOSTIC
+## DIAGNOSTICS
 
 ```
-&DIAGNOSTIC
+&DIAGNOSTICS_PAR
   output_file = "output/scenario"  ! output file name
   ens_id      = ""                 ! a suffix appended to output_file
 /
 ```
 
+## CO2
+
+The CO2 concentration pathway can be specified as an array of annual CO2
+concentrations in ppm, for example `co2_ppm = 680, 681, 682`. The array is
+automatically padded to have length `time_scnr` using the last value in the
+provided series. 
+
+
+```
+&CO2_PAR
+  co2_ppm = 680
+/
+```
 
 
