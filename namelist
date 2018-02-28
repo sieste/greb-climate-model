@@ -8,7 +8,6 @@ time_scnr = 50 ! length of scenariorun [yrs]
 /
 &DIAGNOSTICS_PAR
 output_file = "output/scenario"
-ens_id = '200'
 /
 &CO2_PAR
 co2_ppm = 680
