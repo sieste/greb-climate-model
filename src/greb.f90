@@ -43,29 +43,16 @@ module mo_numerics
   real, parameter    :: dlon      = 360./xdim         ! linear increment in lon
   real, parameter    :: dlat      = 180./ydim         ! linear increment in lat
 
-  integer            :: ireal     = 4         ! record length for IO (machine dependent)
+  integer, parameter :: ireal     = 4         ! record length for IO (machine dependent)
                                               ! ireal = 4 for Mac Book Pro 
 
   integer :: time_flux  = 0                ! length of integration for flux correction [yrs]
   integer :: time_scnr  = 0                ! length of integration for scenario run [yrs]
   integer :: ipx        = 1                ! points for diagnostic print outs
   integer :: ipy        = 1                ! points for diagnostic print outs
+  integer :: year0      = 1940             ! start year
 
-  integer :: year0      = 0
-
-  contains
-  subroutine init_default_mo_numerics()
-    time_flux = 0
-    time_scnr = 0
-    ipx       = 1
-    ipy       = 1
-    year0     = 1940
-  end subroutine init_default_mo_numerics
-
-  subroutine namelist_mo_numerics()
-    namelist / numerics / ipx, ipy, time_flux, time_scnr, year0
-    read(10, numerics)
-  end subroutine namelist_mo_numerics
+  namelist / numerics / ipx, ipy, time_flux, time_scnr, year0
 
 end module mo_numerics
 
@@ -1100,10 +1087,9 @@ PROGRAM  greb_run
   ! initialise modules, first set default parameter values, then read namelist
   open(10,file=namelist_filename,action='read')
   call init_default_mo_physics
-  call init_default_mo_numerics
   call init_default_mo_diagnostics
   call namelist_mo_physics
-  call namelist_mo_numerics
+  read(10, numerics)
   call namelist_mo_diagnostics
 
   print*,'% diagonstic point lat/lon: ',3.75*ipy-90, 3.75*ipx
