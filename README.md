@@ -4,6 +4,9 @@ GREB is a very simple, globally resolved energy balance model, which is capable 
 
 *Dommenget, D., and J. Floeter 2011: Conceptual Understanding of Climate Change with a Globally Resolved Energy Balance Model. Climate dynamics, 2011, 37, 2143-2165.* [link](http://users.monash.edu.au/~dietmard/papers/dommenget.and.floeter.greb.paper.cdym2011.pdf), [pdf (not on github)](dommenget2011greb.pdf) 
 
+![Sketch of physical processes considered in GREB](figure/greb-sketch.png)
+
+
 ## Compile and run
 
 ```
@@ -11,7 +14,7 @@ make greb
 ./greb
 ```
 
-Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and albedo in the file `output/scenario`.
+Under the default setting `greb` simulates 50 years of climate under a double CO2 scenario (starting from 1940), and saves monthly means of surface temperature, air temperature, ocean temperature, humidity, and planetary albedo in the file `output/scenario`.
 
 I have altered the original `greb` code quite substantially to be able to change the model parameters and CO2 concentrations. To run the original code (with only minor modifications), use the make target `greb-original`.
 
