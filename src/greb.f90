@@ -100,8 +100,9 @@ module mo_physics
   real, dimension(10) :: p_emi = (/9.0721, 106.7252, 61.5562, 0.0179, 0.0028,     &
 &             0.0570, 0.3462, 2.3406, 0.7032, 1.0662/)
 
-  ! co2 concentration time series
-  real, dimension(:),allocatable :: co2_ppm
+  ! co2 concentration 
+  real :: co2_flux = 298.                   ! constant used for flux correction
+  real, dimension(:),allocatable :: co2_ppm ! time series for scenario run
 
 ! declare climate fields
   real, dimension(xdim,ydim)          ::  z_topo, glacier, z_ocean
@@ -130,7 +131,7 @@ module mo_physics
 &                        Tl_ice2, To_ice1, To_ice2, co_turb, kappa, ce, cq_latent, &
 &                        cq_rain, z_air, z_vapor, r_qviwv, p_emi
 
-    namelist / co2_par / co2_ppm
+    namelist / co2_par / co2_ppm, co2_flux
 
 end module mo_physics
 
@@ -215,10 +216,9 @@ subroutine greb_model
   end where
   
 ! compute Q-flux corrections
-  CO2_ctrl = 340.
-  print*,'% FLUX CORRECTION RUN; years = ', time_flux, ' co2 = ', CO2_ctrl
+  print*,'% FLUX CORRECTION RUN; years = ', time_flux, ' co2 = ', CO2_flux
   !print*,'% co2 for flux correction ', CO2_ctrl
-  call qflux_correction(CO2_ctrl, Ts_ini, Ta_ini, q_ini, To_ini)
+  call qflux_correction(CO2_flux, Ts_ini, Ta_ini, q_ini, To_ini)
 
 ! scenario run
   print*,'% MODEL RUN; years = ', time_scnr
@@ -308,7 +308,7 @@ subroutine tendencies(CO2, Ts1, Ta1, To1, q1, albedo, SW, LW_surf, Q_lat, Q_sens
 end subroutine tendencies
 
 !+++++++++++++++++++++++++++++++++++++++
-subroutine  qflux_correction(CO2_ctrl, Ts1, Ta1, q1, To1)
+subroutine  qflux_correction(co2, Ts1, Ta1, q1, To1)
 !+++++++++++++++++++++++++++++++++++++++
 !              compute heat flux correction values
 
@@ -325,7 +325,7 @@ subroutine  qflux_correction(CO2_ctrl, Ts1, Ta1, q1, To1)
   do it=1, time_flux*ndt_days*ndays_yr
      jday = mod((it-1)/ndt_days,ndays_yr)+1  ! current calendar day in year
      ityr = mod((it-1),nstep_yr)+1           ! time step in year
-     call tendencies(CO2_ctrl, Ts1, Ta1, To1, q1, albedo, SW, LW_surf, Q_lat,  &
+     call tendencies(co2, Ts1, Ta1, To1, q1, albedo, SW, LW_surf, Q_lat,  &
 &                    Q_sens, Q_lat_air, dq_eva, dq_rain, dq_crcl, dTa_crcl,    &
 &                    dT_ocean, dTo, LWair_down, LWair_up, em)
 
@@ -356,7 +356,7 @@ subroutine  qflux_correction(CO2_ctrl, Ts1, Ta1, q1, To1)
     ! sea ice heat capacity
     call seaice(Ts0)
     ! diagnostics: annual means plots
-    call diagnostics(it, 0.0, CO2_ctrl, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
+    call diagnostics(it, 0.0, co2, ts0, ta0, to0, q0, albedo, sw, lw_surf, q_lat, q_sens)
     ! memory
     Ts1=Ts0; Ta1=Ta0; q1=q0;  To1=To0; 
   end do

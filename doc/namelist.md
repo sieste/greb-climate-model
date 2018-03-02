@@ -66,16 +66,15 @@ The following parameters can be set, default values are shown:
 
 ## CO2
 
-The CO2 concentration pathway can be specified as an array of annual CO2
-concentrations in ppm, for example `co2_ppm = 680, 681, 682`. The array is
-automatically padded to have length `time_scnr` using the last value in the
-provided series. 
-
+The CO2 concentration pathway (`co2_ppm`) can be specified as an array of
+annual CO2 concentrations in ppm, for example `co2_ppm = 680, 681, 682`. If the
+length of the array `co2_ppm` is less than `time_scnr`, it is padded by
+repeating the last value.
 
 ```
 &CO2_PAR
-  co2_ppm = 680
+  co2_flux = 298   ! co2 concentration used for flux correction
+  co2_ppm  = 680   ! co2 concentration for scenario
 /
 ```
-
 
